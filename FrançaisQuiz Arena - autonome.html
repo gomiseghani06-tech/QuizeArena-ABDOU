@@ -1,0 +1,1509 @@
+<!DOCTYPE html>
+<html lang="fr" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FrançaisQuiz Arena - Le Grand Concours Collège</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    colors: {
+                        brand: {
+                            purple: '#8B5CF6',
+                            pink: '#EC4899',
+                            blue: '#3B82F6',
+                            green: '#10B981',
+                            yellow: '#F59E0B',
+                            dark: '#0F172A',
+                            cardDark: '#1E293B'
+                        }
+                    },
+                    fontFamily: {
+                        fredoka: ['Fredoka', 'sans-serif'],
+                        poppins: ['Poppins', 'sans-serif']
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fredoka:wght@400;600;700&family=Poppins:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <!-- FontAwesome Icons -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Canvas Confetti CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <style>
+        body {
+            font-family: 'Poppins', sans-serif;
+            user-select: none;
+        }
+        h1, h2, h3, .font-heading {
+            font-family: 'Fredoka', sans-serif;
+        }
+        /* Glassmorphism utility */
+        .glass {
+            background: rgba(255, 255, 255, 0.15);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        .dark .glass {
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: rgba(0,0,0,0.1);
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #8B5CF6;
+            border-radius: 4px;
+        }
+        /* Pulse Animation */
+        @keyframes pulse-glow {
+            0%, 100% { box-shadow: 0 0 15px rgba(139, 92, 246, 0.5); }
+            50% { box-shadow: 0 0 30px rgba(236, 72, 153, 0.8); }
+        }
+        .pulse-glow {
+            animation: pulse-glow 3s infinite;
+        }
+        /* Wheel Arrow Pointer */
+        .wheel-pointer {
+            width: 0;
+            height: 0;
+            border-left: 20px solid transparent;
+            border-right: 20px solid transparent;
+            border-top: 35px solid #EF4444;
+            filter: drop-shadow(0 4px 6px rgba(0,0,0,0.3));
+        }
+    </style>
+</head>
+<body class="bg-slate-100 text-slate-800 dark:bg-slate-900 dark:text-slate-100 min-h-screen flex flex-col transition-colors duration-300">
+
+    <!-- TOP NAVIGATION BAR -->
+    <header class="sticky top-0 z-40 w-full glass shadow-md px-4 py-3 flex items-center justify-between">
+        <div class="flex items-center gap-3 cursor-pointer" onclick="showScreen('screen-home')">
+            <div class="w-11 h-11 rounded-2xl bg-gradient-to-tr from-purple-600 to-pink-500 flex items-center justify-center text-white text-2xl font-bold shadow-lg transform hover:scale-105 transition">
+                <i class="fa-solid fa-graduation-cap"></i>
+            </div>
+            <div>
+                <h1 class="text-xl md:text-2xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-purple-500 via-pink-500 to-yellow-500">
+                    FrançaisQuiz Arena
+                </h1>
+                <p class="text-xs text-slate-500 dark:text-slate-400 font-medium">L'Arène du Français au Collège</p>
+                <p class="text-xs font-bold text-purple-700 dark:text-purple-300">Prof.ABDELGHANI</p>
+            </div>
+        </div>
+
+        <div class="flex items-center gap-2 md:gap-4">
+            <!-- Level Selector Badge -->
+            <select id="global-level-select" onchange="changeGlobalLevel(this.value)" class="bg-white/80 dark:bg-slate-800/80 border border-purple-300 dark:border-purple-700 rounded-xl px-3 py-1.5 text-xs md:text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-purple-500 shadow-sm">
+                <option value="1AC">1ère AC (6ème)</option>
+                <option value="2AC" selected>2ème AC (5ème)</option>
+                <option value="3AC">3ème AC (4ème/3ème)</option>
+            </select>
+
+            <!-- Audio & Settings -->
+            <button onclick="toggleAudioMute()" id="btn-audio-toggle" title="Musique / Effets sonores" class="w-10 h-10 rounded-xl bg-purple-100 dark:bg-slate-800 text-purple-600 dark:text-purple-300 flex items-center justify-center hover:bg-purple-200 transition shadow">
+                <i class="fa-solid fa-volume-high text-lg"></i>
+            </button>
+            <button onclick="toggleTheme()" title="Mode Sombre / Clair" class="w-10 h-10 rounded-xl bg-yellow-100 dark:bg-slate-800 text-yellow-600 dark:text-yellow-400 flex items-center justify-center hover:bg-yellow-200 transition shadow">
+                <i class="fa-solid fa-moon dark:hidden text-lg"></i>
+                <i class="fa-solid fa-sun hidden dark:block text-lg"></i>
+            </button>
+        </div>
+    </header>
+
+    <!-- MASCOT BAR / QUOTE -->
+    <div id="mascot-container" class="bg-gradient-to-r from-purple-900 via-indigo-900 to-slate-900 text-white py-2 px-4 shadow-inner flex items-center justify-between text-xs md:text-sm">
+        <div class="flex items-center gap-3 max-w-4xl mx-auto">
+            <div class="w-8 h-8 rounded-full bg-pink-500 flex items-center justify-center text-lg animate-bounce">
+                🤖
+            </div>
+            <p id="mascot-dialogue" class="font-medium italic">
+                « Salut champion ! Prêt à relever le défi de la langue française aujourd'hui ? »
+            </p>
+        </div>
+    </div>
+
+    <!-- MAIN CONTAINER (SCREENS) -->
+    <main class="flex-grow container mx-auto px-3 md:px-6 py-6 max-w-6xl">
+
+        <!-- SCREEN 1: HOME DASHBOARD -->
+        <section id="screen-home" class="screen-view space-y-8">
+            <!-- Hero Banner -->
+            <div class="relative overflow-hidden rounded-3xl bg-gradient-to-br from-purple-600 via-pink-600 to-amber-500 p-6 md:p-10 text-white shadow-2xl">
+                <div class="relative z-10 max-w-2xl space-y-4">
+                    <span class="px-3 py-1 bg-white/20 backdrop-blur-md rounded-full text-xs font-semibold uppercase tracking-wider">Compétition & Didactique</span>
+                    <h2 class="text-3xl md:text-5xl font-black leading-tight">Maitrise le Français en t'amusant !</h2>
+                    <p class="text-sm md:text-base text-purple-100 font-light">
+                        Grammaire, Conjugaison, Littérature, Figures de style et Culture Francophone. Défie tes camarades en solo ou en équipe !
+                    </p>
+                    <div class="flex flex-wrap gap-4 pt-2">
+                        <button onclick="startArenaSetup()" class="px-6 py-3.5 bg-white text-purple-700 font-bold rounded-2xl shadow-xl hover:bg-purple-50 transform hover:-translate-y-1 transition flex items-center gap-2">
+                            <i class="fa-solid fa-gamepad text-lg"></i> Lancer une Arena
+                        </button>
+                        <button onclick="showScreen('screen-lessons')" class="px-6 py-3.5 bg-black/30 backdrop-blur-md border border-white/30 text-white font-bold rounded-2xl hover:bg-black/40 transition flex items-center gap-2">
+                            <i class="fa-solid fa-book-open text-lg"></i> Fiches & Leçons
+                        </button>
+                        <button onclick="showScreen('screen-wheel')" class="px-6 py-3.5 bg-yellow-400 text-slate-900 font-bold rounded-2xl shadow-lg hover:bg-yellow-300 transition flex items-center gap-2">
+                            <i class="fa-solid fa-dharmachakra text-lg"></i> Roue de la Chance
+                        </button>
+                    </div>
+                </div>
+                <!-- Decorative Graphic -->
+                <div class="absolute -right-10 -bottom-10 opacity-20 md:opacity-40 pointer-events-none">
+                    <i class="fa-solid fa-trophy text-[220px]"></i>
+                </div>
+            </div>
+
+            <!-- Quick Action Cards Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+                <!-- Card 1 -->
+                <div onclick="startArenaSetup()" class="glass rounded-2xl p-6 cursor-pointer hover:border-purple-500 transition shadow-lg group">
+                    <div class="w-14 h-14 rounded-2xl bg-purple-500/20 text-purple-500 flex items-center justify-center text-2xl mb-4 group-hover:scale-110 transition">
+                        <i class="fa-solid fa-users-rays"></i>
+                    </div>
+                    <h3 class="text-xl font-bold mb-2">Concours Arena</h3>
+                    <p class="text-xs text-slate-500 dark:text-slate-400">Joue en individuel ou en équipe (2 à 6 équipes). Jokers, duels et chronomètre !</p>
+                </div>
+                <!-- Card 2 -->
+                <div onclick="showScreen('screen-lessons')" class="glass rounded-2xl p-6 cursor-pointer hover:border-pink-500 transition shadow-lg group">
+                    <div class="w-14 h-14 rounded-2xl bg-pink-500/20 text-pink-500 flex items-center justify-center text-2xl mb-4 group-hover:scale-110 transition">
+                        <i class="fa-solid fa-lightbulb"></i>
+                    </div>
+                    <h3 class="text-xl font-bold mb-2">Révision & Leçons</h3>
+                    <p class="text-xs text-slate-500 dark:text-slate-400">Fiches de révision structurées avec exemples concrets et mini-quiz instantané.</p>
+                </div>
+                <!-- Card 3 -->
+                <div onclick="showScreen('screen-bank')" class="glass rounded-2xl p-6 cursor-pointer hover:border-blue-500 transition shadow-lg group">
+                    <div class="w-14 h-14 rounded-2xl bg-blue-500/20 text-blue-500 flex items-center justify-center text-2xl mb-4 group-hover:scale-110 transition">
+                        <i class="fa-solid fa-database"></i>
+                    </div>
+                    <h3 class="text-xl font-bold mb-2">Banque & Générateur IA</h3>
+                    <p class="text-xs text-slate-500 dark:text-slate-400">Gère la banque de questions, génère avec l'IA (OpenAI/Gemini) ou importe en CSV/JSON.</p>
+                </div>
+            </div>
+
+            <!-- Subject Domains Grid -->
+            <div>
+                <h3 class="text-xl font-bold mb-4 flex items-center gap-2">
+                    <i class="fa-solid fa-layer-group text-purple-500"></i> Les 9 Domaines du Programme
+                </h3>
+                <div class="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-3 gap-4" id="domains-grid">
+                    <!-- Populated dynamically via JS -->
+                </div>
+            </div>
+        </section>
+
+        <!-- SCREEN 2: SETUP CONCOURS -->
+        <section id="screen-setup" class="screen-view hidden space-y-6">
+            <div class="flex items-center justify-between border-b dark:border-slate-800 pb-4">
+                <h2 class="text-2xl font-bold flex items-center gap-2">
+                    <i class="fa-solid fa-sliders text-purple-500"></i> Configuration du Concours
+                </h2>
+                <button onclick="showScreen('screen-home')" class="text-sm text-slate-500 hover:text-slate-700 dark:hover:text-slate-300">
+                    <i class="fa-solid fa-xmark text-lg"></i> Annuler
+                </button>
+            </div>
+
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                <!-- Left Column: Players & Teams -->
+                <div class="glass p-6 rounded-2xl space-y-6">
+                    <h3 class="text-lg font-bold text-purple-500 border-b pb-2">1. Format & Participants</h3>
+                    
+                    <!-- Mode Selection -->
+                    <div>
+                        <label class="block text-xs font-semibold uppercase text-slate-500 mb-2">Type de Concours</label>
+                        <div class="grid grid-cols-2 gap-3">
+                            <button id="btn-mode-solo" onclick="selectMatchMode('solo')" class="p-3 rounded-xl border-2 border-purple-500 bg-purple-500/10 font-bold text-sm flex items-center justify-center gap-2">
+                                <i class="fa-solid fa-user"></i> Individuel (Chacun pour soi)
+                            </button>
+                            <button id="btn-mode-team" onclick="selectMatchMode('team')" class="p-3 rounded-xl border-2 border-slate-300 dark:border-slate-700 font-bold text-sm flex items-center justify-center gap-2">
+                                <i class="fa-solid fa-people-group"></i> Par Équipes (2 à 6)
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Teams Setup (Visible in Team Mode) -->
+                    <div id="team-setup-panel" class="space-y-4">
+                        <div class="flex justify-between items-center">
+                            <label class="text-xs font-semibold uppercase text-slate-500">Liste des Équipes</label>
+                            <button onclick="addTeamInput()" class="text-xs font-bold text-purple-500 hover:underline">+ Ajouter Équipe</button>
+                        </div>
+                        <div id="teams-list" class="space-y-3">
+                            <!-- Populated dynamically -->
+                        </div>
+                    </div>
+
+                    <!-- Game Variant -->
+                    <div>
+                        <label class="block text-xs font-semibold uppercase text-slate-500 mb-2">Mode de Jeu Specifique</label>
+                        <select id="setup-game-variant" class="w-full bg-slate-100 dark:bg-slate-800 p-3 rounded-xl text-sm font-semibold border border-slate-300 dark:border-slate-700">
+                            <option value="classic">Classique (Standard avec Score)</option>
+                            <option value="duel">Duel 1 vs 1 (Alternance rapide)</option>
+                            <option value="sudden_death">Mort Subite (Élimination à la 1ère erreur)</option>
+                            <option value="time_attack">Contre-la-montre (Maximum de points en 2 min)</option>
+                        </select>
+                    </div>
+                </div>
+
+                <!-- Right Column: Parameters & Rules -->
+                <div class="glass p-6 rounded-2xl space-y-6">
+                    <h3 class="text-lg font-bold text-pink-500 border-b pb-2">2. Domaines & Règles</h3>
+
+                    <!-- Domain Checkboxes -->
+                    <div>
+                        <label class="block text-xs font-semibold uppercase text-slate-500 mb-2">Thèmes Inclus</label>
+                        <div class="grid grid-cols-2 gap-2 text-xs font-medium max-h-40 overflow-y-auto p-2 bg-slate-100 dark:bg-slate-800 rounded-xl" id="setup-domains-list">
+                            <!-- Populated JS -->
+                        </div>
+                    </div>
+
+                    <!-- Question count & Timer -->
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs font-semibold uppercase text-slate-500 mb-1">Nombre de Questions</label>
+                            <select id="setup-q-count" class="w-full bg-slate-100 dark:bg-slate-800 p-2.5 rounded-xl text-sm font-semibold border border-slate-300 dark:border-slate-700">
+                                <option value="5">5 Questions (Express)</option>
+                                <option value="10" selected>10 Questions (Standard)</option>
+                                <option value="15">15 Questions (Grand Concours)</option>
+                                <option value="20">20 Questions (Marathon)</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold uppercase text-slate-500 mb-1">Temps / Question</label>
+                            <select id="setup-timer-sec" class="w-full bg-slate-100 dark:bg-slate-800 p-2.5 rounded-xl text-sm font-semibold border border-slate-300 dark:border-slate-700">
+                                <option value="10">10 Secondes (Ultra Rapide)</option>
+                                <option value="15" selected>15 Secondes</option>
+                                <option value="30">30 Secondes</option>
+                                <option value="60">60 Secondes</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Scoring Options -->
+                    <div class="space-y-2 text-xs font-medium">
+                        <label class="flex items-center gap-2 cursor-pointer">
+                            <input type="checkbox" id="setup-speed-bonus" checked class="rounded text-purple-600 focus:ring-purple-500">
+                            <span>Activer le bonus de vitesse (Réponse ultra rapide)</span>
+                        </label>
+                        <label class="flex items-center gap-2 cursor-pointer">
+                            <input type="checkbox" id="setup-streak-bonus" checked class="rounded text-purple-600 focus:ring-purple-500">
+                            <span>Activer le multiplicateur de série (Streak x2 / x3)</span>
+                        </label>
+                        <label class="flex items-center gap-2 cursor-pointer">
+                            <input type="checkbox" id="setup-penalties" class="rounded text-purple-600 focus:ring-purple-500">
+                            <span>Pénalités (-50% points si réponse fausse)</span>
+                        </label>
+                    </div>
+
+                    <button onclick="launchMatch()" class="w-full py-4 bg-gradient-to-r from-purple-600 to-pink-600 text-white font-black text-lg rounded-2xl shadow-xl hover:opacity-95 transition transform hover:scale-[1.01]">
+                        <i class="fa-solid fa-play"></i> Lancer l'Arène de Jeu
+                    </button>
+                </div>
+            </div>
+        </section>
+
+        <!-- SCREEN 3: LA ROUE DE LA CHANCE -->
+        <section id="screen-wheel" class="screen-view hidden space-y-6 text-center">
+            <div class="max-w-2xl mx-auto space-y-2">
+                <h2 class="text-3xl font-black bg-clip-text text-transparent bg-gradient-to-r from-yellow-400 via-pink-500 to-purple-500">
+                    La Roue de la Chance Arena
+                </h2>
+                <p class="text-xs text-slate-500 dark:text-slate-400">
+                    Fais tourner la roue pour désigner l'équipe de départ, le thème ou un bonus mystère !
+                </p>
+            </div>
+
+            <div class="relative w-80 h-80 sm:w-96 sm:h-96 mx-auto flex items-center justify-center">
+                <!-- Pointer Arrow -->
+                <div class="absolute -top-4 z-20 wheel-pointer"></div>
+                <!-- Canvas Wheel -->
+                <canvas id="wheel-canvas" width="400" height="400" class="w-full h-full rounded-full shadow-2xl border-4 border-yellow-400"></canvas>
+            </div>
+
+            <div class="space-y-4">
+                <div id="wheel-result-box" class="h-12 flex items-center justify-center font-black text-xl text-yellow-500">
+                    <!-- Result text -->
+                </div>
+                <button onclick="spinWheel()" id="btn-spin-wheel" class="px-8 py-3.5 bg-gradient-to-r from-yellow-400 to-amber-500 text-slate-900 font-extrabold text-lg rounded-2xl shadow-lg hover:brightness-110 transition transform active:scale-95">
+                    <i class="fa-solid fa-rotate text-lg"></i> Faire Tourner !
+                </button>
+            </div>
+        </section>
+
+        <!-- SCREEN 4: GAME ARENA (MATCH EN COURS) -->
+        <section id="screen-game" class="screen-view hidden space-y-6">
+            <!-- Game Top Bar Header -->
+            <div class="glass p-4 rounded-2xl flex flex-wrap items-center justify-between gap-4 border-b-2 border-purple-500">
+                <div class="flex items-center gap-3">
+                    <div id="game-active-avatar" class="w-12 h-12 rounded-2xl bg-purple-600 text-2xl flex items-center justify-center text-white shadow-md">
+                        👥
+                    </div>
+                    <div>
+                        <h4 id="game-active-player-name" class="font-extrabold text-lg">Équipe 1</h4>
+                        <p id="game-domain-badge" class="text-xs font-semibold text-purple-500 uppercase tracking-wide">Grammaire</p>
+                    </div>
+                </div>
+
+                <!-- Timer Indicator -->
+                <div class="flex items-center gap-3 bg-slate-200 dark:bg-slate-800 px-4 py-2 rounded-xl">
+                    <i class="fa-solid fa-clock text-pink-500 text-xl animate-pulse"></i>
+                    <span id="game-timer-display" class="font-mono text-2xl font-black text-pink-500">15</span>
+                </div>
+
+                <!-- Question Progress -->
+                <div class="text-right">
+                    <span class="text-xs text-slate-500 uppercase font-bold block">Progression</span>
+                    <span id="game-q-counter" class="font-black text-lg">1 / 10</span>
+                </div>
+            </div>
+
+            <!-- Timer Progress Bar -->
+            <div class="w-full h-3 bg-slate-200 dark:bg-slate-800 rounded-full overflow-hidden">
+                <div id="game-timer-bar" class="h-full bg-gradient-to-r from-pink-500 to-purple-600 w-full transition-all duration-1000 ease-linear"></div>
+            </div>
+
+            <!-- Main Question Card -->
+            <div class="glass p-6 md:p-8 rounded-3xl space-y-6 shadow-xl relative">
+                <!-- Question Type / Streak Badge -->
+                <div class="flex justify-between items-center">
+                    <span id="game-q-type-badge" class="px-3 py-1 bg-purple-500/20 text-purple-400 font-bold text-xs rounded-full uppercase">
+                        QCM - 100 pts
+                    </span>
+                    <span id="game-streak-badge" class="hidden px-3 py-1 bg-amber-500/20 text-amber-400 font-bold text-xs rounded-full">
+                        🔥 Série x2
+                    </span>
+                </div>
+
+                <!-- Question Text -->
+                <h3 id="game-question-text" class="text-xl md:text-2xl font-bold leading-relaxed">
+                    <!-- Dynamic Text -->
+                </h3>
+
+                <!-- Options List Grid -->
+                <div id="game-options-grid" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <!-- Options populated JS -->
+                </div>
+
+                <!-- Explanation / Feedback Banner (Hidden initially) -->
+                <div id="game-feedback-box" class="hidden p-4 rounded-2xl space-y-2 border">
+                    <div id="game-feedback-title" class="font-bold flex items-center gap-2"></div>
+                    <p id="game-feedback-text" class="text-xs md:text-sm text-slate-600 dark:text-slate-300"></p>
+                </div>
+            </div>
+
+            <!-- Jokers & Action Bar -->
+            <div class="flex flex-wrap items-center justify-between gap-4">
+                <div class="flex gap-2">
+                    <button id="joker-5050" onclick="useJoker('5050')" class="px-3.5 py-2 glass rounded-xl text-xs font-bold hover:bg-purple-500/20 transition flex items-center gap-1.5">
+                        <i class="fa-solid fa-scissors text-purple-400"></i> 50/50
+                    </button>
+                    <button id="joker-time" onclick="useJoker('time')" class="px-3.5 py-2 glass rounded-xl text-xs font-bold hover:bg-pink-500/20 transition flex items-center gap-1.5">
+                        <i class="fa-solid fa-hourglass-plus text-pink-400"></i> +15s
+                    </button>
+                    <button id="joker-pass" onclick="useJoker('pass')" class="px-3.5 py-2 glass rounded-xl text-xs font-bold hover:bg-amber-500/20 transition flex items-center gap-1.5">
+                        <i class="fa-solid fa-forward text-amber-400"></i> Passer
+                    </button>
+                </div>
+
+                <button id="btn-next-q" onclick="nextQuestion()" class="hidden px-6 py-3 bg-gradient-to-r from-purple-600 to-pink-600 text-white font-bold rounded-xl shadow-lg hover:opacity-90 transition">
+                    Question Suivante <i class="fa-solid fa-arrow-right ml-1"></i>
+                </button>
+            </div>
+
+            <!-- Live Scoreboard Footer -->
+            <div class="glass p-4 rounded-2xl">
+                <h5 class="text-xs font-bold uppercase text-slate-400 mb-2">Scores en Direct</h5>
+                <div id="game-scoreboard-live" class="flex flex-wrap gap-4 text-xs font-bold">
+                    <!-- Populated JS -->
+                </div>
+            </div>
+        </section>
+
+        <!-- SCREEN 5: PODIUM & RESULTS -->
+        <section id="screen-results" class="screen-view hidden space-y-8 text-center">
+            <div class="space-y-2">
+                <h2 class="text-4xl font-black bg-clip-text text-transparent bg-gradient-to-r from-yellow-400 via-pink-500 to-purple-500">
+                    Résultats & Podium Final
+                </h2>
+                <p class="text-xs text-slate-500 dark:text-slate-400">Félicitations à tous les champions de la langue française !</p>
+            </div>
+
+            <!-- 3D Podium Display -->
+            <div class="flex justify-center items-end gap-3 md:gap-6 pt-10 pb-4 max-w-xl mx-auto" id="podium-container">
+                <!-- 2nd Place -->
+                <div id="podium-2" class="w-1/3 flex flex-col items-center">
+                    <div id="podium-2-avatar" class="text-3xl mb-1">🥈</div>
+                    <div id="podium-2-name" class="font-bold text-xs md:text-sm truncate w-full">Équipe 2</div>
+                    <div id="podium-2-score" class="text-xs text-purple-400 font-extrabold mb-1">0 pts</div>
+                    <div class="w-full bg-slate-300 dark:bg-slate-700 h-28 rounded-t-2xl flex items-center justify-center text-xl font-black text-slate-500">2</div>
+                </div>
+                <!-- 1st Place -->
+                <div id="podium-1" class="w-1/3 flex flex-col items-center">
+                    <div id="podium-1-avatar" class="text-4xl mb-1 animate-bounce">👑</div>
+                    <div id="podium-1-name" class="font-black text-sm md:text-base truncate w-full text-yellow-500">Champion</div>
+                    <div id="podium-1-score" class="text-sm text-yellow-400 font-black mb-1">0 pts</div>
+                    <div class="w-full bg-gradient-to-t from-yellow-500 to-amber-400 h-40 rounded-t-2xl flex items-center justify-center text-3xl font-black text-slate-900 shadow-xl">1</div>
+                </div>
+                <!-- 3rd Place -->
+                <div id="podium-3" class="w-1/3 flex flex-col items-center">
+                    <div id="podium-3-avatar" class="text-3xl mb-1">🥉</div>
+                    <div id="podium-3-name" class="font-bold text-xs md:text-sm truncate w-full">Équipe 3</div>
+                    <div id="podium-3-score" class="text-xs text-purple-400 font-extrabold mb-1">0 pts</div>
+                    <div class="w-full bg-slate-400 dark:bg-slate-800 h-20 rounded-t-2xl flex items-center justify-center text-xl font-black text-slate-500">3</div>
+                </div>
+            </div>
+
+            <!-- Detailed Stats & Review -->
+            <div class="glass p-6 rounded-2xl text-left space-y-4 max-w-2xl mx-auto">
+                <h4 class="font-bold text-lg border-b pb-2 flex items-center gap-2">
+                    <i class="fa-solid fa-chart-pie text-purple-500"></i> Statistiques du Match
+                </h4>
+                <div id="results-stats-summary" class="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+                    <!-- Populated JS -->
+                </div>
+            </div>
+
+            <div class="flex flex-wrap justify-center gap-4">
+                <button onclick="startArenaSetup()" class="px-6 py-3 bg-purple-600 text-white font-bold rounded-xl shadow-lg hover:bg-purple-500 transition">
+                    <i class="fa-solid fa-rotate-right"></i> Rejouer
+                </button>
+                <button onclick="window.print()" class="px-6 py-3 bg-slate-200 dark:bg-slate-800 font-bold rounded-xl shadow hover:bg-slate-300 transition">
+                    <i class="fa-solid fa-print"></i> Imprimer le Rapport
+                </button>
+                <button onclick="showScreen('screen-home')" class="px-6 py-3 bg-slate-700 text-white font-bold rounded-xl shadow hover:bg-slate-600 transition">
+                    <i class="fa-solid fa-house"></i> Accueil
+                </button>
+            </div>
+        </section>
+
+        <!-- SCREEN 6: LEÇONS & FICHES DE RÉVISION -->
+        <section id="screen-lessons" class="screen-view hidden space-y-6">
+            <div class="flex items-center justify-between border-b dark:border-slate-800 pb-4">
+                <div>
+                    <h2 class="text-2xl font-bold flex items-center gap-2">
+                        <i class="fa-solid fa-book-open text-pink-500"></i> Fiches & Leçons de Révision
+                    </h2>
+                    <p class="text-xs text-slate-500">Sélectionne un thème pour réviser avant le concours.</p>
+                </div>
+                <button onclick="showScreen('screen-home')" class="text-sm font-semibold text-purple-500 hover:underline">
+                    ← Retour
+                </button>
+            </div>
+
+            <!-- Filter tabs by Domain -->
+            <div class="flex gap-2 overflow-x-auto pb-2" id="lessons-domain-tabs">
+                <!-- Dynamic tabs -->
+            </div>
+
+            <!-- Lessons Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6" id="lessons-cards-grid">
+                <!-- Dynamic lesson cards -->
+            </div>
+        </section>
+
+        <!-- SCREEN 7: BANQUE DE QUESTIONS & GENERATION IA -->
+        <section id="screen-bank" class="screen-view hidden space-y-6">
+            <div class="flex items-center justify-between border-b dark:border-slate-800 pb-4">
+                <div>
+                    <h2 class="text-2xl font-bold flex items-center gap-2">
+                        <i class="fa-solid fa-database text-blue-500"></i> Gestion de la Banque de Questions
+                    </h2>
+                    <p class="text-xs text-slate-500">Gère, génère par IA ou importe tes propre questions.</p>
+                </div>
+                <button onclick="showScreen('screen-home')" class="text-sm font-semibold text-purple-500 hover:underline">
+                    ← Retour
+                </button>
+            </div>
+
+            <!-- Sub-tabs -->
+            <div class="flex gap-4 border-b dark:border-slate-800 pb-2">
+                <button onclick="switchBankTab('tab-manual')" class="px-4 py-2 font-bold text-sm text-purple-500 border-b-2 border-purple-500" id="btn-tab-manual">Ajout Manuel</button>
+                <button onclick="switchBankTab('tab-ai')" class="px-4 py-2 font-bold text-sm text-slate-500 hover:text-purple-500" id="btn-tab-ai">Génération IA</button>
+                <button onclick="switchBankTab('tab-io')" class="px-4 py-2 font-bold text-sm text-slate-500 hover:text-purple-500" id="btn-tab-io">Import / Export</button>
+            </div>
+
+            <!-- TAB 1: Ajout Manuel -->
+            <div id="tab-manual" class="bank-subtab space-y-4">
+                <form id="form-add-q" onsubmit="handleManualAddQuestion(event)" class="glass p-6 rounded-2xl grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div>
+                        <label class="block text-xs font-bold uppercase mb-1">Question</label>
+                        <input type="text" id="q-add-text" required class="w-full bg-slate-100 dark:bg-slate-800 p-2.5 rounded-xl border text-sm" placeholder="ex: Quel est le COD dans cette phrase ?">
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold uppercase mb-1">Domaine</label>
+                        <select id="q-add-domain" class="w-full bg-slate-100 dark:bg-slate-800 p-2.5 rounded-xl border text-sm"></select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold uppercase mb-1">Niveau</label>
+                        <select id="q-add-level" class="w-full bg-slate-100 dark:bg-slate-800 p-2.5 rounded-xl border text-sm">
+                            <option value="1AC">1ère AC</option>
+                            <option value="2AC">2ème AC</option>
+                            <option value="3AC">3ème AC</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-bold uppercase mb-1">Bonne Réponse</label>
+                        <input type="text" id="q-add-correct" required class="w-full bg-slate-100 dark:bg-slate-800 p-2.5 rounded-xl border text-sm" placeholder="Bonne réponse">
+                    </div>
+                    <div class="md:col-span-2">
+                        <label class="block text-xs font-bold uppercase mb-1">3 Mauvaises Réponses (Séparées par une virgule)</label>
+                        <input type="text" id="q-add-wrongs" required class="w-full bg-slate-100 dark:bg-slate-800 p-2.5 rounded-xl border text-sm" placeholder="Faux 1, Faux 2, Faux 3">
+                    </div>
+                    <div class="md:col-span-2">
+                        <label class="block text-xs font-bold uppercase mb-1">Explication Pédagogique</label>
+                        <textarea id="q-add-explanation" rows="2" class="w-full bg-slate-100 dark:bg-slate-800 p-2.5 rounded-xl border text-sm" placeholder="Pourquoi cette réponse est correcte..."></textarea>
+                    </div>
+                    <div class="md:col-span-2">
+                        <button type="submit" class="px-6 py-2.5 bg-purple-600 text-white font-bold rounded-xl hover:bg-purple-500 transition">
+                            <i class="fa-solid fa-plus"></i> Enregistrer la Question
+                        </button>
+                    </div>
+                </form>
+
+                <!-- Questions List Table -->
+                <div class="glass p-4 rounded-2xl overflow-x-auto">
+                    <h4 class="font-bold mb-2">Banque Actuelle (<span id="bank-count-badge">0</span> questions)</h4>
+                    <table class="w-full text-left text-xs">
+                        <thead>
+                            <tr class="border-b dark:border-slate-800">
+                                <th class="p-2">Niveau</th>
+                                <th class="p-2">Domaine</th>
+                                <th class="p-2">Question</th>
+                                <th class="p-2">Action</th>
+                            </tr>
+                        </thead>
+                        <tbody id="bank-table-body">
+                            <!-- Populated JS -->
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- TAB 2: Génération IA -->
+            <div id="tab-ai" class="bank-subtab hidden space-y-4">
+                <div class="glass p-6 rounded-2xl space-y-4 max-w-xl">
+                    <h3 class="font-bold text-lg text-purple-400">Générateur Automatique IA</h3>
+                    <div>
+                        <label class="block text-xs font-bold uppercase mb-1">Clé API (OpenAI ou Gemini)</label>
+                        <input type="password" id="ai-api-key" class="w-full bg-slate-100 dark:bg-slate-800 p-2.5 rounded-xl border text-sm" placeholder="sk-...">
+                    </div>
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs font-bold uppercase mb-1">Domaine</label>
+                            <select id="ai-q-domain" class="w-full bg-slate-100 dark:bg-slate-800 p-2.5 rounded-xl border text-sm"></select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-bold uppercase mb-1">Nombre</label>
+                            <input type="number" id="ai-q-count" value="5" min="1" max="10" class="w-full bg-slate-100 dark:bg-slate-800 p-2.5 rounded-xl border text-sm">
+                        </div>
+                    </div>
+                    <button onclick="generateAIQuestions()" class="w-full py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-bold rounded-xl shadow hover:opacity-90 transition">
+                        <i class="fa-solid fa-wand-magic-sparkles"></i> Générer les Questions
+                    </button>
+                    <div id="ai-status-msg" class="text-xs font-bold text-center"></div>
+                </div>
+            </div>
+
+            <!-- TAB 3: Import / Export -->
+            <div id="tab-io" class="bank-subtab hidden space-y-4">
+                <div class="glass p-6 rounded-2xl space-y-4 max-w-xl">
+                    <h3 class="font-bold text-lg text-pink-400">Export & Import de Données</h3>
+                    <div class="flex gap-4">
+                        <button onclick="exportQuestionsJSON()" class="px-4 py-2.5 bg-purple-600 text-white font-bold rounded-xl text-xs">
+                            <i class="fa-solid fa-download"></i> Exporter JSON
+                        </button>
+                        <button onclick="resetBankToDefault()" class="px-4 py-2.5 bg-red-600 text-white font-bold rounded-xl text-xs">
+                            <i class="fa-solid fa-trash-arrow-up"></i> Reinitialiser la Banque
+                        </button>
+                    </div>
+                    <div class="border-t pt-4">
+                        <label class="block text-xs font-bold uppercase mb-2">Importer un Fichier JSON</label>
+                        <input type="file" id="import-file-input" accept=".json" onchange="importQuestionsJSON(event)" class="text-xs">
+                    </div>
+                </div>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="py-4 text-center text-xs text-slate-500 border-t dark:border-slate-800">
+        FrançaisQuiz Arena © 2026 — Plateforme Ludo-Éducative Didactique pour le Collège
+    </footer>
+
+    <!-- JAVASCRIPT CORE LOGIC -->
+    <script>
+        /* ==========================================================================
+           1. INITIAL DATA & CONSTANTS
+           ========================================================================== */
+        const DOMAINS = [
+            { id: 'grammaire', name: 'Grammaire', icon: 'fa-book-bookmark', color: 'from-purple-500 to-indigo-600' },
+            { id: 'conjugaison', name: 'Conjugaison', icon: 'fa-clock-rotate-left', color: 'from-pink-500 to-rose-600' },
+            { id: 'orthographe', name: 'Orthographe', icon: 'fa-pen-nib', color: 'from-blue-500 to-cyan-600' },
+            { id: 'vocabulaire', name: 'Vocabulaire', icon: 'fa-spell-check', color: 'from-emerald-500 to-teal-600' },
+            { id: 'lecture', name: 'Lecture & Textes', icon: 'fa-align-left', color: 'from-amber-500 to-orange-600' },
+            { id: 'expression', name: 'Expression Écrite', icon: 'fa-feather', color: 'from-violet-500 to-purple-700' },
+            { id: 'figures', name: 'Figures de Style', icon: 'fa-wand-magic-sparkles', color: 'from-fuchsia-500 to-pink-700' },
+            { id: 'litterature', name: 'Littérature & Poésie', icon: 'fa-masks-theater', color: 'from-red-500 to-pink-600' },
+            { id: 'culture', name: 'Culture Francophone', icon: 'fa-earth-africa', color: 'from-sky-500 to-blue-700' }
+        ];
+
+        // Seed Initial Questions (At least 50+ spanning levels and domains)
+        const DEFAULT_QUESTIONS = [
+            // 1AC Grammaire
+            { id: 1, level: '1AC', domain: 'grammaire', question: "Dans 'Le petit chat dort', quelle est la fonction de 'petit' ?", options: ["Épithète liée", "Attribut du sujet", "Complément d'objet", "Apposition"], correct: "Épithète liée", explanation: "L'adjectif placé directement à côté du nom qu'il qualifie est épithète liée." },
+            { id: 2, level: '1AC', domain: 'grammaire', question: "Identifier le COD dans : 'Marie lit un roman passionnant.'", options: ["Marie", "lit", "un roman passionnant", "passionnant"], correct: "un roman passionnant", explanation: "On pose la question 'Marie lit quoi ?' -> un roman passionnant." },
+            // 1AC Conjugaison
+            { id: 3, level: '1AC', domain: 'conjugaison', question: "Au passé composé, comment conjugue-t-on le verbe 'finir' à la 1ère personne du singulier ?", options: ["J'ai fini", "Je finissais", "Je finis", "J'avais fini"], correct: "J'ai fini", explanation: "Le passé composé se forme avec l'auxiliaire avoir au présent + participe passé." },
+            { id: 4, level: '1AC', domain: 'conjugaison', question: "Quelle est la terminaison de l'imparfait à la 2ème personne du pluriel (vous) ?", options: ["-iez", "-ez", "-ions", "-aient"], correct: "-iez", explanation: "Les terminaisons de l'imparfait sont : -ais, -ais, -ait, -ions, -iez, -aient." },
+            // 2AC Figures de style
+            { id: 5, level: '2AC', domain: 'figures', question: "'Cette fille est belle comme un cœur.' De quelle figure s'agit-il ?", options: ["Métaphore", "Comparaison", "Personnification", "Hyperbole"], correct: "Comparaison", explanation: "Présence d'un outil de comparaison explicite ('comme')." },
+            { id: 6, level: '2AC', domain: 'figures', question: "'Le vent hurlait dans la nuit.' Quelle figure de style est utilisée ?", options: ["Personnification", "Anaphore", "Oxymore", "Lithote"], correct: "Personnification", explanation: "Attribuer un comportement humain (hurler) à un élément inanimé (le vent)." },
+            // 3AC Littérature & Poésie
+            { id: 7, level: '3AC', domain: 'litterature', question: "Qui est l'auteur de la célèbre pièce 'Molière' ?", options: ["Jean-Baptiste Poquelin", "Victor Hugo", "Jean Racine", "Pierre Corneille"], correct: "Jean-Baptiste Poquelin", explanation: "Molière est le nom de scène de Jean-Baptiste Poquelin." },
+            { id: 8, level: '3AC', domain: 'litterature', question: "Combien de syllabes compte un vers Alexandrin ?", options: ["10", "12", "8", "14"], correct: "12", explanation: "Un alexandrin est un vers majeur de 12 syllabes." },
+            // Culture Francophone
+            { id: 9, level: '2AC', domain: 'culture', question: "Quel est le plus grand pays francophone au monde par sa superficie ?", options: ["La France", "Le Canada", "La République Démocratique du Congo", "Le Sénégal"], correct: "Le Canada", explanation: "Le Canada est le plus vaste pays ayant le français comme langue officielle." },
+            { id: 10, level: '3AC', domain: 'culture', question: "Lequel de ces écrivains est d'origine marocaine francophone ?", options: ["Tahar Ben Jelloun", "Albert Camus", "Amadou Hampâté Bâ", "Léopold Sédar Senghor"], correct: "Tahar Ben Jelloun", explanation: "Tahar Ben Jelloun est un éminent écrivain marocain lauréat du Prix Goncourt." }
+        ];
+
+        // Lessons Database
+        const LESSONS_DATA = [
+            {
+                id: 'l1',
+                domain: 'grammaire',
+                level: '1AC',
+                title: 'Les Fonctions de l\'Adjectif Qualificatif',
+                summary: 'L\'adjectif qualificatif peut avoir deux fonctions principales selon sa place par rapport au nom :',
+                points: [
+                    'Épithète : placé directement à côté du nom (ex: Une *belle* journée).',
+                    'Attribut du sujet : séparé du nom par un verbe d\'état (être, paraître, sembler, devenir...) (ex: La journée paraît *belle*).'
+                ]
+            },
+            {
+                id: 'l2',
+                domain: 'figures',
+                level: '2AC',
+                title: 'Comparaison vs Métaphore',
+                summary: 'Deux figures d\'analogie très courantes :',
+                points: [
+                    'Comparaison : rapproche deux éléments AVEC un mot comparatif (comme, pareil à, ressembler à) (ex: Il est fort *comme* un lion).',
+                    'Métaphore : rapprochement SANS mot comparatif (ex: Cet homme est un lion).'
+                ]
+            }
+        ];
+
+        /* ==========================================================================
+           2. STATE MANAGEMENT
+           ========================================================================== */
+        let state = {
+            currentLevel: '2AC',
+            audioMuted: false,
+            questions: [],
+            match: {
+                mode: 'solo', // 'solo' or 'team'
+                variant: 'classic',
+                teams: [],
+                domains: [],
+                qCount: 10,
+                timerSec: 15,
+                speedBonus: true,
+                streakBonus: true,
+                penalties: false,
+                currentQIndex: 0,
+                questionsList: [],
+                activeTeamIndex: 0,
+                scores: {},
+                streaks: {},
+                timerInterval: null,
+                timeLeft: 15,
+                jokersUsed: {}
+            }
+        };
+
+        /* ==========================================================================
+           3. WEB AUDIO SYNTHESIZER (No external files required)
+           ========================================================================== */
+        class SoundSynth {
+            constructor() {
+                this.ctx = null;
+            }
+            init() {
+                if (!this.ctx) {
+                    this.ctx = new (window.AudioContext || window.webkitAudioContext)();
+                }
+            }
+            playTone(freq, type = 'sine', duration = 0.2, vol = 0.3) {
+                if (state.audioMuted) return;
+                this.init();
+                try {
+                    const osc = this.ctx.createOscillator();
+                    const gain = this.ctx.createGain();
+                    osc.type = type;
+                    osc.frequency.setValueAtTime(freq, this.ctx.currentTime);
+                    gain.gain.setValueAtTime(vol, this.ctx.currentTime);
+                    gain.gain.exponentialRampToValueAtTime(0.0001, this.ctx.currentTime + duration);
+                    osc.connect(gain);
+                    gain.connect(this.ctx.destination);
+                    osc.start();
+                    osc.stop(this.ctx.currentTime + duration);
+                } catch(e) {}
+            }
+            playSuccess() {
+                this.playTone(523.25, 'triangle', 0.1, 0.3); // C5
+                setTimeout(() => this.playTone(659.25, 'triangle', 0.1, 0.3), 100); // E5
+                setTimeout(() => this.playTone(783.99, 'triangle', 0.3, 0.4), 200); // G5
+            }
+            playError() {
+                this.playTone(220, 'sawtooth', 0.15, 0.4);
+                setTimeout(() => this.playTone(180, 'sawtooth', 0.25, 0.4), 150);
+            }
+            playTick() {
+                this.playTone(800, 'sine', 0.03, 0.1);
+            }
+            playFanfare() {
+                const notes = [440, 554, 659, 880];
+                notes.forEach((n, i) => {
+                    setTimeout(() => this.playTone(n, 'square', 0.2, 0.3), i * 120);
+                });
+            }
+        }
+        const audioSynth = new SoundSynth();
+
+        /* ==========================================================================
+           4. APP INITIALIZATION & NAVIGATION
+           ========================================================================== */
+        window.onload = function() {
+            // Load questions from LocalStorage or default
+            const localQ = localStorage.getItem('fq_questions');
+            if (localQ) {
+                state.questions = JSON.parse(localQ);
+            } else {
+                state.questions = [...DEFAULT_QUESTIONS];
+                saveQuestionsToStorage();
+            }
+
+            renderDomainsGrid();
+            renderLessons();
+            initWheel();
+            updateBankTable();
+            populateFormSelects();
+        };
+
+        function showScreen(screenId) {
+            document.querySelectorAll('.screen-view').forEach(el => el.classList.add('hidden'));
+            const target = document.getElementById(screenId);
+            if (target) target.classList.remove('hidden');
+
+            // Dialogue mascot update
+            updateMascotText(screenId);
+        }
+
+        function toggleTheme() {
+            document.documentElement.classList.toggle('dark');
+        }
+
+        function toggleAudioMute() {
+            state.audioMuted = !state.audioMuted;
+            const btn = document.getElementById('btn-audio-toggle');
+            btn.innerHTML = state.audioMuted ? 
+                '<i class="fa-solid fa-volume-xmark text-lg text-red-500"></i>' : 
+                '<i class="fa-solid fa-volume-high text-lg"></i>';
+        }
+
+        function changeGlobalLevel(lvl) {
+            state.currentLevel = lvl;
+            renderLessons();
+            updateMascotText('level_change');
+        }
+
+        function updateMascotText(context) {
+            const el = document.getElementById('mascot-dialogue');
+            const quotes = {
+                'screen-home': "Bienvenue dans l'arène ! Choisis un mode pour commencer.",
+                'screen-setup': "Configure les équipes et sélectionne tes thèmes préférés.",
+                'screen-game': "Concentration maximale ! Le chrono tourne...",
+                'screen-results': "Bravo pour vos efforts ! Regardons le classement.",
+                'screen-lessons': "Révise tes fiches pour devenir imbattable !",
+                'screen-wheel': "Fais tourner la roue de la chance pour pimenter le jeu !",
+                'level_change': `Niveau actuellement sélectionné : ${state.currentLevel}.`
+            };
+            el.innerText = quotes[context] || "Prêt pour le prochain défi ?";
+        }
+
+        /* ==========================================================================
+           5. DOMAINS & LESSONS RENDERING
+           ========================================================================== */
+        function renderDomainsGrid() {
+            const container = document.getElementById('domains-grid');
+            container.innerHTML = DOMAINS.map(d => `
+                <div onclick="filterPracticeByDomain('${d.id}')" class="glass p-4 rounded-2xl flex items-center gap-3 cursor-pointer hover:border-purple-500 transition shadow">
+                    <div class="w-10 h-10 rounded-xl bg-gradient-to-tr ${d.color} flex items-center justify-center text-white text-lg shadow">
+                        <i class="fa-solid ${d.icon}"></i>
+                    </div>
+                    <div>
+                        <h4 class="font-bold text-xs md:text-sm">${d.name}</h4>
+                        <span class="text-[10px] text-slate-400">Explorer</span>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function renderLessons() {
+            const container = document.getElementById('lessons-cards-grid');
+            const filtered = LESSONS_DATA.filter(l => l.level === state.currentLevel || !l.level);
+
+            if (filtered.length === 0) {
+                container.innerHTML = `<p class="col-span-2 text-xs text-slate-500">Aucune fiche disponible pour ce niveau.</p>`;
+                return;
+            }
+
+            container.innerHTML = filtered.map(l => `
+                <div class="glass p-6 rounded-2xl space-y-3">
+                    <span class="px-2.5 py-1 bg-purple-500/20 text-purple-400 font-bold text-[10px] rounded-full uppercase">${l.domain}</span>
+                    <h3 class="font-bold text-base">${l.title}</h3>
+                    <p class="text-xs text-slate-400">${l.summary}</p>
+                    <ul class="list-disc list-inside text-xs space-y-1 text-slate-300">
+                        ${l.points.map(p => `<li>${p}</li>`).join('')}
+                    </ul>
+                    <button onclick="filterPracticeByDomain('${l.domain}')" class="px-4 py-2 bg-pink-600 text-white font-bold text-xs rounded-xl shadow hover:bg-pink-500 transition">
+                        <i class="fa-solid fa-play"></i> S'entraîner sur cette leçon
+                    </button>
+                </div>
+            `).join('');
+        }
+
+        function filterPracticeByDomain(domainId) {
+            state.match.domains = [domainId];
+            startArenaSetup();
+        }
+
+        /* ==========================================================================
+           6. SETUP & MATCH CONFIGURATION
+           ========================================================================== */
+        function startArenaSetup() {
+            showScreen('screen-setup');
+            renderSetupDomainsList();
+            setupDefaultTeams();
+        }
+
+        function selectMatchMode(mode) {
+            state.match.mode = mode;
+            const btnSolo = document.getElementById('btn-mode-solo');
+            const btnTeam = document.getElementById('btn-mode-team');
+            const panelTeam = document.getElementById('team-setup-panel');
+
+            if (mode === 'solo') {
+                btnSolo.className = "p-3 rounded-xl border-2 border-purple-500 bg-purple-500/10 font-bold text-sm flex items-center justify-center gap-2";
+                btnTeam.className = "p-3 rounded-xl border-2 border-slate-300 dark:border-slate-700 font-bold text-sm flex items-center justify-center gap-2";
+                panelTeam.classList.add('hidden');
+            } else {
+                btnTeam.className = "p-3 rounded-xl border-2 border-purple-500 bg-purple-500/10 font-bold text-sm flex items-center justify-center gap-2";
+                btnSolo.className = "p-3 rounded-xl border-2 border-slate-300 dark:border-slate-700 font-bold text-sm flex items-center justify-center gap-2";
+                panelTeam.classList.remove('hidden');
+            }
+        }
+
+        function setupDefaultTeams() {
+            const list = document.getElementById('teams-list');
+            const defaultTeams = [
+                { name: "Les Phénix", emoji: "🦅", color: "#8B5CF6" },
+                { name: "Les Dragons", emoji: "🐉", color: "#EC4899" }
+            ];
+            list.innerHTML = defaultTeams.map((t, i) => `
+                <div class="flex items-center gap-2">
+                    <input type="text" value="${t.emoji}" class="w-10 text-center bg-slate-100 dark:bg-slate-800 p-2 rounded-xl text-sm" id="team-emoji-${i}">
+                    <input type="text" value="${t.name}" class="flex-grow bg-slate-100 dark:bg-slate-800 p-2 rounded-xl text-sm font-semibold" id="team-name-${i}">
+                </div>
+            `).join('');
+        }
+
+        function addTeamInput() {
+            const list = document.getElementById('teams-list');
+            const count = list.children.length;
+            if (count >= 6) return;
+            const div = document.createElement('div');
+            div.className = "flex items-center gap-2";
+            div.innerHTML = `
+                <input type="text" value="⭐" class="w-10 text-center bg-slate-100 dark:bg-slate-800 p-2 rounded-xl text-sm" id="team-emoji-${count}">
+                <input type="text" value="Équipe ${count + 1}" class="flex-grow bg-slate-100 dark:bg-slate-800 p-2 rounded-xl text-sm font-semibold" id="team-name-${count}">
+            `;
+            list.appendChild(div);
+        }
+
+        function renderSetupDomainsList() {
+            const container = document.getElementById('setup-domains-list');
+            container.innerHTML = DOMAINS.map(d => `
+                <label class="flex items-center gap-2 p-1.5 hover:bg-slate-200 dark:hover:bg-slate-700 rounded-lg cursor-pointer">
+                    <input type="checkbox" value="${d.id}" checked class="setup-domain-chk rounded text-purple-600">
+                    <span>${d.name}</span>
+                </label>
+            `).join('');
+        }
+
+        /* ==========================================================================
+           7. MATCH ENGINE & QUESTION LOOP
+           ========================================================================== */
+        function launchMatch() {
+            // Collect Selected Domains
+            const chks = document.querySelectorAll('.setup-domain-chk:checked');
+            const selectedDomains = Array.from(chks).map(c => c.value);
+
+            if (selectedDomains.length === 0) {
+                alert("Veuillez cocher au moins un domaine d'apprentissage.");
+                return;
+            }
+
+            // Collect Teams/Players
+            state.match.teams = [];
+            if (state.match.mode === 'solo') {
+                state.match.teams = [{ name: "Joueur Solo", emoji: "👤", color: "#8B5CF6" }];
+            } else {
+                const list = document.getElementById('teams-list').children;
+                for (let i = 0; i < list.length; i++) {
+                    const name = document.getElementById(`team-name-${i}`)?.value || `Équipe ${i+1}`;
+                    const emoji = document.getElementById(`team-emoji-${i}`)?.value || "⭐";
+                    state.match.teams.push({ name, emoji, color: '#8B5CF6' });
+                }
+            }
+
+            // Filter Questions
+            let pool = state.questions.filter(q => q.level === state.currentLevel && selectedDomains.includes(q.domain));
+            if (pool.length === 0) pool = state.questions; // Fallback
+
+            // Shuffle
+            pool = pool.sort(() => Math.random() - 0.5);
+
+            const qCount = parseInt(document.getElementById('setup-q-count').value);
+            state.match.questionsList = pool.slice(0, qCount);
+            state.match.timerSec = parseInt(document.getElementById('setup-timer-sec').value);
+            state.match.speedBonus = document.getElementById('setup-speed-bonus').checked;
+            state.match.streakBonus = document.getElementById('setup-streak-bonus').checked;
+            state.match.penalties = document.getElementById('setup-penalties').checked;
+
+            state.match.currentQIndex = 0;
+            state.match.activeTeamIndex = 0;
+            state.match.scores = {};
+            state.match.streaks = {};
+            state.match.jokersUsed = {};
+
+            state.match.teams.forEach(t => {
+                state.match.scores[t.name] = 0;
+                state.match.streaks[t.name] = 0;
+            });
+
+            showScreen('screen-game');
+            renderCurrentQuestion();
+        }
+
+        function renderCurrentQuestion() {
+            const q = state.match.questionsList[state.match.currentQIndex];
+            if (!q) {
+                finishMatch();
+                return;
+            }
+
+            // Reset UI
+            document.getElementById('game-feedback-box').classList.add('hidden');
+            document.getElementById('btn-next-q').classList.add('hidden');
+            resetJokerButtons();
+
+            // Active Team Display
+            const activeTeam = state.match.teams[state.match.activeTeamIndex];
+            document.getElementById('game-active-avatar').innerText = activeTeam.emoji;
+            document.getElementById('game-active-player-name').innerText = activeTeam.name;
+
+            // Domain Badge
+            const domObj = DOMAINS.find(d => d.id === q.domain);
+            document.getElementById('game-domain-badge').innerText = domObj ? domObj.name : q.domain;
+
+            // Question counter
+            document.getElementById('game-q-counter').innerText = `${state.match.currentQIndex + 1} / ${state.match.questionsList.length}`;
+
+            // Question Text
+            document.getElementById('game-question-text').innerText = q.question;
+
+            // Streak Badge
+            const currentStreak = state.match.streaks[activeTeam.name] || 0;
+            const streakBadge = document.getElementById('game-streak-badge');
+            if (currentStreak >= 2) {
+                streakBadge.classList.remove('hidden');
+                streakBadge.innerText = `🔥 Série x${currentStreak}`;
+            } else {
+                streakBadge.classList.add('hidden');
+            }
+
+            // Prepare Options
+            let options = [];
+            if (q.options) {
+                options = [...q.options];
+            } else {
+                options = [q.correct, ...q.wrongs];
+            }
+            options = options.sort(() => Math.random() - 0.5);
+
+            const grid = document.getElementById('game-options-grid');
+            grid.innerHTML = options.map((opt, i) => `
+                <button onclick="submitAnswer(this, '${opt.replace(/'/g, "\\'")}')" class="q-opt-btn p-4 glass rounded-2xl text-left font-semibold hover:border-purple-500 transition flex items-center justify-between group">
+                    <span>${opt}</span>
+                    <i class="fa-solid fa-circle-check opacity-0 group-hover:opacity-100 text-purple-400 transition"></i>
+                </button>
+            `).join('');
+
+            updateScoreboardLive();
+            startQuestionTimer();
+        }
+
+        function startQuestionTimer() {
+            clearInterval(state.match.timerInterval);
+            state.match.timeLeft = state.match.timerSec;
+            updateTimerDisplay();
+
+            state.match.timerInterval = setInterval(() => {
+                state.match.timeLeft--;
+                audioSynth.playTick();
+                updateTimerDisplay();
+
+                if (state.match.timeLeft <= 0) {
+                    clearInterval(state.match.timerInterval);
+                    handleTimeOut();
+                }
+            }, 1000);
+        }
+
+        function updateTimerDisplay() {
+            document.getElementById('game-timer-display').innerText = state.match.timeLeft;
+            const pct = (state.match.timeLeft / state.match.timerSec) * 100;
+            document.getElementById('game-timer-bar').style.width = `${pct}%`;
+        }
+
+        function submitAnswer(btnEl, selectedOpt) {
+            clearInterval(state.match.timerInterval);
+
+            // Disable all option buttons
+            document.querySelectorAll('.q-opt-btn').forEach(b => b.disabled = true);
+
+            const q = state.match.questionsList[state.match.currentQIndex];
+            const isCorrect = (selectedOpt === q.correct);
+            const activeTeam = state.match.teams[state.match.activeTeamIndex];
+
+            const feedbackBox = document.getElementById('game-feedback-box');
+            const feedbackTitle = document.getElementById('game-feedback-title');
+            const feedbackText = document.getElementById('game-feedback-text');
+
+            feedbackBox.classList.remove('hidden');
+
+            if (isCorrect) {
+                audioSynth.playSuccess();
+                btnEl.classList.add('bg-green-500/30', 'border-green-500', 'text-green-300');
+                feedbackBox.className = "p-4 rounded-2xl space-y-2 border border-green-500 bg-green-500/10";
+                feedbackTitle.innerHTML = `<i class="fa-solid fa-circle-check text-green-400 text-xl"></i> Bonne Réponse !`;
+
+                // Calculate Score
+                let basePts = 100;
+                if (state.match.speedBonus && state.match.timeLeft > (state.match.timerSec / 2)) {
+                    basePts += 50; // Speed Bonus
+                }
+                const currentStreak = state.match.streaks[activeTeam.name] || 0;
+                if (state.match.streakBonus && currentStreak >= 1) {
+                    basePts *= 1.5;
+                }
+
+                state.match.scores[activeTeam.name] = (state.match.scores[activeTeam.name] || 0) + Math.round(basePts);
+                state.match.streaks[activeTeam.name] = currentStreak + 1;
+
+            } else {
+                audioSynth.playError();
+                btnEl.classList.add('bg-red-500/30', 'border-red-500', 'text-red-300');
+                feedbackBox.className = "p-4 rounded-2xl space-y-2 border border-red-500 bg-red-500/10";
+                feedbackTitle.innerHTML = `<i class="fa-solid fa-circle-xmark text-red-400 text-xl"></i> Mauvaise Réponse !`;
+
+                state.match.streaks[activeTeam.name] = 0; // Reset streak
+                if (state.match.penalties) {
+                    state.match.scores[activeTeam.name] = Math.max(0, (state.match.scores[activeTeam.name] || 0) - 50);
+                }
+            }
+
+            feedbackText.innerText = q.explanation || `La réponse correcte était : ${q.correct}`;
+
+            updateScoreboardLive();
+            document.getElementById('btn-next-q').classList.remove('hidden');
+        }
+
+        function handleTimeOut() {
+            document.querySelectorAll('.q-opt-btn').forEach(b => b.disabled = true);
+            audioSynth.playError();
+
+            const feedbackBox = document.getElementById('game-feedback-box');
+            feedbackBox.classList.remove('hidden');
+            feedbackBox.className = "p-4 rounded-2xl space-y-2 border border-amber-500 bg-amber-500/10";
+            document.getElementById('game-feedback-title').innerHTML = `<i class="fa-solid fa-hourglass-end text-amber-400 text-xl"></i> Temps Écoulé !`;
+            
+            const q = state.match.questionsList[state.match.currentQIndex];
+            document.getElementById('game-feedback-text').innerText = `Temps épuisé ! La bonne réponse était : ${q.correct}`;
+
+            document.getElementById('btn-next-q').classList.remove('hidden');
+        }
+
+        function nextQuestion() {
+            state.match.currentQIndex++;
+            // Rotate Team turn in Team mode
+            if (state.match.mode === 'team') {
+                state.match.activeTeamIndex = (state.match.activeTeamIndex + 1) % state.match.teams.length;
+            }
+            renderCurrentQuestion();
+        }
+
+        function updateScoreboardLive() {
+            const container = document.getElementById('game-scoreboard-live');
+            container.innerHTML = state.match.teams.map(t => `
+                <div class="px-3 py-1.5 rounded-xl bg-slate-200 dark:bg-slate-800 flex items-center gap-2">
+                    <span>${t.emoji} ${t.name}</span>
+                    <span class="text-purple-400 font-extrabold">${state.match.scores[t.name] || 0} pts</span>
+                </div>
+            `).join('');
+        }
+
+        /* ==========================================================================
+           8. JOKERS (50/50, +15s, PASS)
+           ========================================================================== */
+        function resetJokerButtons() {
+            ['5050', 'time', 'pass'].forEach(j => {
+                const btn = document.getElementById(`joker-${j}`);
+                btn.disabled = false;
+                btn.classList.remove('opacity-40');
+            });
+        }
+
+        function useJoker(type) {
+            const btn = document.getElementById(`joker-${type}`);
+            btn.disabled = true;
+            btn.classList.add('opacity-40');
+
+            if (type === '5050') {
+                const q = state.match.questionsList[state.match.currentQIndex];
+                const btns = Array.from(document.querySelectorAll('.q-opt-btn'));
+                let removed = 0;
+                btns.forEach(b => {
+                    const txt = b.querySelector('span').innerText;
+                    if (txt !== q.correct && removed < 2) {
+                        b.style.visibility = 'hidden';
+                        removed++;
+                    }
+                });
+            } else if (type === 'time') {
+                state.match.timeLeft += 15;
+                updateTimerDisplay();
+            } else if (type === 'pass') {
+                clearInterval(state.match.timerInterval);
+                nextQuestion();
+            }
+        }
+
+        /* ==========================================================================
+           9. PODIUM & RESULTS
+           ========================================================================== */
+        function finishMatch() {
+            showScreen('screen-results');
+            audioSynth.playFanfare();
+            confetti({ particleCount: 100, spread: 70, origin: { y: 0.6 } });
+
+            // Sort Scores
+            const sorted = [...state.match.teams].sort((a,b) => (state.match.scores[b.name]||0) - (state.match.scores[a.name]||0));
+
+            // Populate Podium
+            if (sorted[0]) {
+                document.getElementById('podium-1-name').innerText = sorted[0].name;
+                document.getElementById('podium-1-score').innerText = `${state.match.scores[sorted[0].name]||0} pts`;
+                document.getElementById('podium-1-avatar').innerText = sorted[0].emoji;
+            }
+            if (sorted[1]) {
+                document.getElementById('podium-2-name').innerText = sorted[1].name;
+                document.getElementById('podium-2-score').innerText = `${state.match.scores[sorted[1].name]||0} pts`;
+                document.getElementById('podium-2-avatar').innerText = sorted[1].emoji;
+            } else {
+                document.getElementById('podium-2').classList.add('hidden');
+            }
+            if (sorted[2]) {
+                document.getElementById('podium-3-name').innerText = sorted[2].name;
+                document.getElementById('podium-3-score').innerText = `${state.match.scores[sorted[2].name]||0} pts`;
+                document.getElementById('podium-3-avatar').innerText = sorted[2].emoji;
+            } else {
+                document.getElementById('podium-3').classList.add('hidden');
+            }
+
+            // Populate Summary
+            const summary = document.getElementById('results-stats-summary');
+            summary.innerHTML = `
+                <div class="glass p-3 rounded-xl">
+                    <span class="text-[10px] uppercase text-slate-400 font-bold block">Questions</span>
+                    <span class="text-lg font-black">${state.match.questionsList.length}</span>
+                </div>
+                <div class="glass p-3 rounded-xl">
+                    <span class="text-[10px] uppercase text-slate-400 font-bold block">Niveau</span>
+                    <span class="text-lg font-black">${state.currentLevel}</span>
+                </div>
+                <div class="glass p-3 rounded-xl">
+                    <span class="text-[10px] uppercase text-slate-400 font-bold block">Mode</span>
+                    <span class="text-lg font-black uppercase">${state.match.mode}</span>
+                </div>
+                <div class="glass p-3 rounded-xl">
+                    <span class="text-[10px] uppercase text-slate-400 font-bold block">Top Score</span>
+                    <span class="text-lg font-black text-yellow-500">${state.match.scores[sorted[0]?.name]||0}</span>
+                </div>
+            `;
+        }
+
+        /* ==========================================================================
+           10. LA ROUE DE LA CHANCE (HTML5 Canvas Wheel)
+           ========================================================================== */
+        let wheelCanvas, wheelCtx;
+        let wheelAngle = 0;
+        let isSpinning = false;
+        const wheelSegments = ["Bonus +100pts", "Grammaire", "Conjugaison", "Défi Vitesse", "Double Points", "Mystère", "Rejouer", "Culture"];
+        const wheelColors = ["#8B5CF6", "#EC4899", "#3B82F6", "#10B981", "#F59E0B", "#EF4444", "#6366F1", "#14B8A6"];
+
+        function initWheel() {
+            wheelCanvas = document.getElementById('wheel-canvas');
+            if (!wheelCanvas) return;
+            wheelCtx = wheelCanvas.getContext('2d');
+            drawWheel();
+        }
+
+        function drawWheel() {
+            const numSegs = wheelSegments.length;
+            const arc = (2 * Math.PI) / numSegs;
+            const cx = wheelCanvas.width / 2;
+            const cy = wheelCanvas.height / 2;
+            const radius = cx - 10;
+
+            wheelCtx.clearRect(0, 0, wheelCanvas.width, wheelCanvas.height);
+
+            for (let i = 0; i < numSegs; i++) {
+                const angle = wheelAngle + i * arc;
+                wheelCtx.beginPath();
+                wheelCtx.fillStyle = wheelColors[i % wheelColors.length];
+                wheelCtx.moveTo(cx, cy);
+                wheelCtx.arc(cx, cy, radius, angle, angle + arc);
+                wheelCtx.lineTo(cx, cy);
+                wheelCtx.fill();
+                wheelCtx.strokeStyle = "#FFFFFF";
+                wheelCtx.lineWidth = 3;
+                wheelCtx.stroke();
+
+                // Draw Text
+                wheelCtx.save();
+                wheelCtx.translate(cx, cy);
+                wheelCtx.rotate(angle + arc / 2);
+                wheelCtx.textAlign = "right";
+                wheelCtx.fillStyle = "#FFFFFF";
+                wheelCtx.font = "bold 14px Fredoka, sans-serif";
+                wheelCtx.fillText(wheelSegments[i], radius - 20, 5);
+                wheelCtx.restore();
+            }
+        }
+
+        function spinWheel() {
+            if (isSpinning) return;
+            isSpinning = true;
+            document.getElementById('wheel-result-box').innerText = "";
+
+            const spinDuration = 4000;
+            const start = performance.now();
+            const totalRotation = Math.PI * 2 * 5 + Math.random() * Math.PI * 2;
+
+            function animateWheel(now) {
+                const elapsed = now - start;
+                if (elapsed < spinDuration) {
+                    const progress = elapsed / spinDuration;
+                    const easeOut = 1 - Math.pow(1 - progress, 3);
+                    wheelAngle = totalRotation * easeOut;
+                    drawWheel();
+                    audioSynth.playTick();
+                    requestAnimationFrame(animateWheel);
+                } else {
+                    isSpinning = false;
+                    wheelAngle = totalRotation % (Math.PI * 2);
+                    drawWheel();
+
+                    // Calculate Winner
+                    const numSegs = wheelSegments.length;
+                    const arc = (2 * Math.PI) / numSegs;
+                    const normalized = (3.5 * Math.PI - wheelAngle) % (2 * Math.PI);
+                    const index = Math.floor(normalized / arc) % numSegs;
+
+                    const winner = wheelSegments[index];
+                    document.getElementById('wheel-result-box').innerText = `🎉 Résultat : ${winner}`;
+                    audioSynth.playFanfare();
+                    confetti({ particleCount: 50, spread: 60 });
+                }
+            }
+            requestAnimationFrame(animateWheel);
+        }
+
+        /* ==========================================================================
+           11. BANK MANAGEMENT, IMPORT/EXPORT & IA MOCK
+           ========================================================================== */
+        function populateFormSelects() {
+            const addDomainSelect = document.getElementById('q-add-domain');
+            const aiDomainSelect = document.getElementById('ai-q-domain');
+
+            const opts = DOMAINS.map(d => `<option value="${d.id}">${d.name}</option>`).join('');
+            if (addDomainSelect) addDomainSelect.innerHTML = opts;
+            if (aiDomainSelect) aiDomainSelect.innerHTML = opts;
+        }
+
+        function updateBankTable() {
+            const body = document.getElementById('bank-table-body');
+            const countBadge = document.getElementById('bank-count-badge');
+            if (countBadge) countBadge.innerText = state.questions.length;
+
+            if (!body) return;
+            body.innerHTML = state.questions.map((q, idx) => `
+                <tr class="border-b dark:border-slate-800 hover:bg-slate-100/50 dark:hover:bg-slate-800/50">
+                    <td class="p-2 font-bold">${q.level}</td>
+                    <td class="p-2 uppercase text-[10px] font-bold text-purple-400">${q.domain}</td>
+                    <td class="p-2 max-w-xs truncate">${q.question}</td>
+                    <td class="p-2">
+                        <button onclick="deleteQuestion(${idx})" class="text-red-500 hover:text-red-700">
+                            <i class="fa-solid fa-trash"></i>
+                        </button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function handleManualAddQuestion(e) {
+            e.preventDefault();
+            const text = document.getElementById('q-add-text').value;
+            const domain = document.getElementById('q-add-domain').value;
+            const level = document.getElementById('q-add-level').value;
+            const correct = document.getElementById('q-add-correct').value;
+            const wrongsStr = document.getElementById('q-add-wrongs').value;
+            const explanation = document.getElementById('q-add-explanation').value;
+
+            const wrongs = wrongsStr.split(',').map(s => s.trim()).filter(s => s.length > 0);
+
+            const newQ = {
+                id: Date.now(),
+                level,
+                domain,
+                question: text,
+                options: [correct, ...wrongs],
+                correct,
+                explanation
+            };
+
+            state.questions.push(newQ);
+            saveQuestionsToStorage();
+            updateBankTable();
+
+            document.getElementById('form-add-q').reset();
+            alert("Question ajoutée avec succès à la banque !");
+        }
+
+        function deleteQuestion(idx) {
+            if (confirm("Supprimer cette question de la banque ?")) {
+                state.questions.splice(idx, 1);
+                saveQuestionsToStorage();
+                updateBankTable();
+            }
+        }
+
+        function switchBankTab(tabId) {
+            document.querySelectorAll('.bank-subtab').forEach(el => el.classList.add('hidden'));
+            document.getElementById(tabId).classList.remove('hidden');
+
+            ['btn-tab-manual', 'btn-tab-ai', 'btn-tab-io'].forEach(id => {
+                const btn = document.getElementById(id);
+                btn.className = "px-4 py-2 font-bold text-sm text-slate-500 hover:text-purple-500";
+            });
+            document.getElementById(`btn-${tabId.replace('tab-', 'tab-')}`).className = "px-4 py-2 font-bold text-sm text-purple-500 border-b-2 border-purple-500";
+        }
+
+        function saveQuestionsToStorage() {
+            localStorage.setItem('fq_questions', JSON.stringify(state.questions));
+        }
+
+        function resetBankToDefault() {
+            if (confirm("Voulez-vous réinitialiser la banque avec les questions par défaut ?")) {
+                state.questions = [...DEFAULT_QUESTIONS];
+                saveQuestionsToStorage();
+                updateBankTable();
+            }
+        }
+
+        function exportQuestionsJSON() {
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(state.questions, null, 2));
+            const dlAnchor = document.createElement('a');
+            dlAnchor.setAttribute("href", dataStr);
+            dlAnchor.setAttribute("download", `francais_quiz_questions_${state.currentLevel}.json`);
+            dlAnchor.click();
+        }
+
+        function importQuestionsJSON(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                try {
+                    const imported = JSON.parse(e.target.result);
+                    if (Array.isArray(imported)) {
+                        state.questions = [...state.questions, ...imported];
+                        saveQuestionsToStorage();
+                        updateBankTable();
+                        alert(`${imported.length} questions importées avec succès !`);
+                    }
+                } catch(err) {
+                    alert("Erreur lors de la lecture du fichier JSON.");
+                }
+            };
+            reader.readAsText(file);
+        }
+
+        /* Mock AI Question Generator */
+        function generateAIQuestions() {
+            const status = document.getElementById('ai-status-msg');
+            const domain = document.getElementById('ai-q-domain').value;
+            status.innerText = "✨ Génération automatique par IA en cours...";
+            status.className = "text-xs font-bold text-center text-purple-400 animate-pulse";
+
+            setTimeout(() => {
+                const mockGenerated = [
+                    {
+                        id: Date.now() + 1,
+                        level: state.currentLevel,
+                        domain: domain,
+                        question: `[IA] Question générée sur le thème : ${domain}`,
+                        options: ["Option Correcte", "Faux 1", "Faux 2", "Faux 3"],
+                        correct: "Option Correcte",
+                        explanation: "Explication générée automatiquement par le modèle IA."
+                    }
+                ];
+
+                state.questions.push(...mockGenerated);
+                saveQuestionsToStorage();
+                updateBankTable();
+
+                status.innerText = "✅ 1 Question générée et ajoutée à la banque !";
+                status.className = "text-xs font-bold text-center text-green-400";
+            }, 1500);
+        }
+    </script>
+</body>
+</html>
